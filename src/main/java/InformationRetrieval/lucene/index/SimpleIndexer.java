@@ -17,7 +17,7 @@ import org.apache.lucene.store.FSDirectory;
 
 public class SimpleIndexer {
 
-	private static final String indexDirectory = "./data";
+	private static final String indexDirectory = "./indexDirectory";
 
 	private static final String dirToBeIndexed = "./data";
 

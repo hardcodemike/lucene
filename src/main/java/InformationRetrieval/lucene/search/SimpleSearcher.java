@@ -18,9 +18,9 @@ import org.apache.lucene.util.QueryBuilder;
 
 public class SimpleSearcher {
 
-	private static final String indexDirectory = "./data/";
+	private static final String indexDirectory = "./indexDirectory/";
 
-	private static final String queryString = "Electro porn";
+	private static final String queryString = "Forget Electro";
 
 	private static final int maxHits = 100;
 
@@ -38,7 +38,7 @@ public class SimpleSearcher {
 			throws Exception {
 
 	    String pathString = indexDir.toString();
-        Path path = FileSystems.getDefault().getPath(pathString);
+        Path path = FileSystems.getDefault()		.getPath(pathString);
 
 		Directory directory = FSDirectory.open(path);
 		
@@ -55,15 +55,38 @@ public class SimpleSearcher {
 		TopDocs topDocs =searcher.search(query, maxHits);
 		
 		ScoreDoc[] hits = topDocs.scoreDocs;
-		
-        for (int i = 0; i < hits.length; i++) {
-            int docId = hits[i].doc;
-            Document d = searcher.doc(docId);
-            System.out.println(d.get("fileName") + " Score :"+hits[i].score);
-            
-        }
-        
+
+		if(hits.length==0){
+			System.out.println("No result found for query1, with the content: " + queryStr);
+		}else {
+			for (int i = 0; i < hits.length; i++) {
+				int docId = hits[i].doc;
+				Document d = searcher.doc(docId);
+				System.out.println(d.get("fileName") + " Score :" + hits[i].score);
+
+			}
+		}
 		System.out.println("Found " + hits.length);
+		System.out.println("First Query end!");
+		System.out.println("----------------------------------------------");
+		System.out.println("Second Query start");
+
+		Query query2 = builder.createPhraseQuery("content", queryStr, 4); //Phrase Slop sagt aus wieiviele wörter dazwischen sein dürfen
+		TopDocs topDocs2 = searcher.search(query2, maxHits);
+
+		ScoreDoc[] hit2 = topDocs2.scoreDocs;
+		if(hit2.length==0){
+			System.out.println("No result found for query2, with the content: " + queryStr);
+		}else {
+			for (int i = 0; i < hit2.length; i++) {
+				int docId = hit2[i].doc;
+				Document d = searcher.doc(docId);
+				System.out.println(d.get("fileName") + " Score :" + hit2[i].score);
+			}
+		}
+		System.out.println("Found " + hit2.length);
+        
+
 
 	}
 
