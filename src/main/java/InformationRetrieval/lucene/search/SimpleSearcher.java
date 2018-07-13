@@ -8,10 +8,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.QueryBuilder;
@@ -38,7 +36,7 @@ public class SimpleSearcher {
 			throws Exception {
 
 	    String pathString = indexDir.toString();
-        Path path = FileSystems.getDefault()		.getPath(pathString);
+        Path path = FileSystems.getDefault().getPath(pathString);
 
 		Directory directory = FSDirectory.open(path);
 		
@@ -50,11 +48,11 @@ public class SimpleSearcher {
 		
 		QueryBuilder builder = new QueryBuilder(analyzer);
 		
-		Query query = builder.createPhraseQuery("content", queryStr);
+		Query query = builder.createPhraseQuery("content", queryStr); // um nicht nur nach spezifischen Termen zu suchen (Termquery)
 		
 		TopDocs topDocs =searcher.search(query, maxHits);
 		
-		ScoreDoc[] hits = topDocs.scoreDocs;
+		ScoreDoc[] hits = topDocs.scoreDocs; // präsentiert einen Treffer, falls einer vorhanden
 
 		if(hits.length==0){
 			System.out.println("No result found for query1, with the content: " + queryStr);
@@ -85,7 +83,50 @@ public class SimpleSearcher {
 			}
 		}
 		System.out.println("Found " + hit2.length);
-        
+
+		System.out.println("Second Query end!");
+		System.out.println("-----------------------------------------------");
+		System.out.println("WildcardQuery starts!");
+
+
+		Term term = new Term("content", "*lectr*");
+		Query wildcardQuery = new WildcardQuery(term);
+
+
+		TopDocs topDocsWC = searcher.search(wildcardQuery, maxHits);
+		ScoreDoc[] hit3wc = topDocsWC.scoreDocs;
+
+		if(hit3wc.length==0){
+			System.out.println("No result found for WCquery3, with the wildcard: " + wildcardQuery.toString());
+		}else{
+			for(int i = 0; i<hit3wc.length; i++){
+				int docId = hit3wc[i].doc;
+				Document d = searcher.doc(docId);
+				System.out.println(d.get("fileName") + " Score: " + hit3wc[i].score);
+			}
+		}
+		System.out.println("Found " + hit3wc.length);
+
+		System.out.println("END WILDCARD!-----------------------------------");
+		Query query3 = builder.createBooleanQuery("content", queryStr); // findet alle kombinationen aus den 2 woertern (findet auch electronic)
+		TopDocs topDocs3 = searcher.search(query3, maxHits);
+
+		ScoreDoc[] hit3 = topDocs3.scoreDocs;
+		if(hit3.length==0){
+			System.out.println("No result found for query2, with the content: " + queryStr);
+		}else {
+			for (int i = 0; i < hit3.length; i++) {
+				int docId = hit3[i].doc;
+				Document d = searcher.doc(docId);
+				System.out.println(d.get("fileName") + " Score :" + hit3[i].score);
+			}
+		}
+		System.out.println("Found " + hit3.length);
+
+		System.out.println("Third Query end!");
+		System.out.println("-----------------------------------------------");
+		System.out.println("Forth Query starts!");
+		System.out.println("----------------------------------------------------");
 
 
 	}
